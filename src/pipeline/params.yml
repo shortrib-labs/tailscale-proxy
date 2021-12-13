@@ -1,5 +1,9 @@
 ---
-git:
+config: 
+  repostitory: https://github.com/tailscale/tailscale.git
+  branch: feature-deploy-proxy
+
+tailscale:
   repository: https://github.com/tailscale/tailscale.git
   branch: release-branch/1.18
 

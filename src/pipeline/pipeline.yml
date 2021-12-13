@@ -25,6 +25,7 @@ jobs:
 - name: create-image
   plan:
   - get: tailscale-source
+    trigger: true
   - task: build-image
     privileged: true
     config:
@@ -46,3 +47,11 @@ jobs:
   - put: tailscale-proxy-image
     params:
       image: image/image.tar
+
+- name: deploy-proxy
+  plan:
+  - get: tailscale-proxy-image
+    trigger: true
+    passed: 
+    - create-image
+
