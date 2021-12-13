@@ -1,0 +1,8 @@
+---
+git:
+  repository: https://github.com/tailscale/tailscale.git
+  branch: release-branch/1.18
+
+image:
+  repository: network/tailscale-proxy
+
