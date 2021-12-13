@@ -1,0 +1,6 @@
+#@data/values
+---
+image: ghcr.io/tailscale/tailscale:latest
+service_account: "tailscale"
+auth_secret: "tailscale-auth"
+envoy_ip: ""
