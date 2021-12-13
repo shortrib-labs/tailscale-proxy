@@ -13,12 +13,16 @@
       {
           "type": "name",
           "value": "tailscale/tailscale"
+      },
+      { 
+        "type": "tag",
+        "value": "latest"
       }
   ],
   "trigger": {
     "type": "scheduled",
     "trigger_settings": {
-      "cron": "0 */10 * * * *"
+      "cron": "0 20 10 */1,7,14,28 * *"
     }
   },
   "deletion": false,
