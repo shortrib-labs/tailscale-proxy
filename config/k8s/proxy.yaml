@@ -4,46 +4,57 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 apiVersion: v1
-kind: Pod
+kind: Deployment
 metadata:
   name: #@ data.values.proxy_name
 spec:
-  serviceAccountName: #@ data.values.service_account
-  initContainers:
-    # In order to run as a proxy we need to enable IP Forwarding inside
-    # the container. The `net.ipv4.ip_forward` sysctl is not whitelisted
-    # in Kubelet by default.
-  - name: sysctler
-    image: busybox
-    securityContext:
-      privileged: true
-    command: ["/bin/sh"]
-    args:
-      - -c
-      - sysctl -w net.ipv4.ip_forward=1
-    resources:
-      requests:
-        cpu: 1m
-        memory: 1Mi
-  containers:
-  - name: tailscale
-    imagePullPolicy: Always
-    image: #@ data.values.image 
-    env:
-    # Store the state in a k8s secret
-    - name: KUBE_SECRET
-      value: tailscale-state 
-    - name: USERSPACE
-      value: "false"
-    - name: AUTH_KEY
-      valueFrom:
-        secretKeyRef:
-          name: #@ data.values.auth_secret
-          key: AUTH_KEY
-          optional: true
-    - name: DEST_IP
-      value: #@ data.values.envoy_ip
-    securityContext:
-      capabilities:
-        add:
-        - NET_ADMIN
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tailscale
+  template:
+    metadata:
+      labels:
+        app: tailscale
+    spec:
+      serviceAccountName: #@ data.values.service_account
+      initContainers:
+        # In order to run as a proxy we need to enable IP Forwarding inside
+        # the container. The `net.ipv4.ip_forward` sysctl is not whitelisted
+        # in Kubelet by default.
+      - name: sysctler
+        image: busybox
+        securityContext:
+          privileged: true
+        command: ["/bin/sh"]
+        args:
+          - -c
+          - sysctl -w net.ipv4.ip_forward=1
+        resources:
+          requests:
+            cpu: 1m
+            memory: 1Mi
+      containers:
+      - name: tailscale
+        imagePullPolicy: Always
+        image: #@ data.values.image 
+        env:
+        # Store the state in a k8s secret
+        - name: KUBE_SECRET
+          value: tailscale-state 
+        - name: USERSPACE
+          value: "false"
+        - name: AUTH_KEY
+          valueFrom:
+            secretKeyRef:
+              name: #@ data.values.auth_secret
+              key: AUTH_KEY
+              optional: true
+        - name: DEST_IP
+          value: #@ data.values.envoy_ip
+        - name: EXTRA_ARGS
+          value: #@ "--hostname {}".format(data.values.proxy_name)
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
