@@ -11,7 +11,7 @@ rules:
 - apiGroups: [""] # "" indicates the core API group
   resources: ["secrets"]
   # Create can not be restricted to a resource name.
-  verbs: ["create"]
+  verbs: ["create", "list"]
 - apiGroups: [""] # "" indicates the core API group
   resourceNames: #@ [ "{}".format(data.values.auth_secret) ]
   resources: ["secrets"]
