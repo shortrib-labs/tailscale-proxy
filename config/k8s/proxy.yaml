@@ -41,7 +41,7 @@ spec:
         env:
         # Store the state in a k8s secret
         - name: KUBE_SECRET
-          value: tailscale-state 
+          value: tailscale-auth 
         - name: USERSPACE
           value: "false"
         - name: AUTH_KEY
