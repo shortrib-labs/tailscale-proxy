@@ -13,6 +13,6 @@ rules:
   # Create can not be restricted to a resource name.
   verbs: ["create"]
 - apiGroups: [""] # "" indicates the core API group
-  resourceNames: #@ ["{}.format(dta.values.auth_secret"]
+  resourceNames: #@ ["{}".format(data.values.auth_secret]
   resources: ["secrets"]
   verbs: ["get", "update"]
