@@ -1,6 +1,6 @@
 ---
 config: 
-  repostitory: https://github.com/tailscale/tailscale.git
+  repository: https://github.com/shortrib-net/tailscale-proxy.git
   branch: feature-deploy-proxy
 
 tailscale:
