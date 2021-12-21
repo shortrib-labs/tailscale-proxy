@@ -1,0 +1,8 @@
+#@data/values
+---
+proxy_name: proxy
+image: ghcr.io/tailscale/tailscale:latest
+service_account: "tailscale"
+auth_secret: "tailscale-auth"
+envoy_ip: ""
+auth_key: ""

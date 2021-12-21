@@ -1,5 +1,11 @@
 ---
-git:
+proxy-name: shared-services
+
+config: 
+  repository: https://github.com/shortrib-net/tailscale-proxy.git
+  branch: main
+
+tailscale:
   repository: https://github.com/tailscale/tailscale.git
   branch: release-branch/1.18
 

@@ -1,0 +1,110 @@
+---
+resources:
+# Use the example docker configuration in the Tailscale source
+- name: tailscale-source
+  type: git
+  icon: github
+  source:
+    uri: ((tailscale.repository))
+    branch: ((tailscale.branch))
+    paths: 
+    - "docs/k8s/*"
+
+
+# Our configuration for the proxy
+- name: proxy-config
+  type: git
+  icon: github
+  source:
+    uri: ((config.repository))
+    branch: ((config.branch))
+    paths: 
+    - "config/k8s/*"
+
+# Where we will push the image
+- name: tailscale-proxy-image
+  type: registry-image
+  icon: docker
+  source:
+    # You need to provide these variables when
+    # setting the pipeline
+    repository: ((registry.fqdn))/((image.repository))
+    username: ((registry.robot))
+    password: ((registry.token))
+
+jobs:
+- name: create-image
+  plan:
+  - get: tailscale-source
+    trigger: true
+  - task: build-image
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          # Check out the README for oci-build-task at
+          # https://github.com/concourse/oci-build-task
+          repository: concourse/oci-build-task
+      inputs:
+      - name: tailscale-source
+      outputs:
+      - name: image
+      params:
+        CONTEXT: tailscale-source/docs/k8s
+      run:
+        path: build
+  - put: tailscale-proxy-image
+    params:
+      image: image/image.tar
+
+- name: deploy-proxy
+  plan:
+  - get: proxy-config
+    trigger: true
+  - get: tailscale-proxy-image
+    trigger: true
+    passed: 
+    - create-image
+  - task: deploy-proxy-image
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          # Check out the README for oci-build-task at
+          # https://github.com/concourse/oci-build-task
+          repository: ((registry.fqdn))/toolkit/toolkit
+      inputs:
+      - name: proxy-config
+      outputs:
+      - name: image
+      params:
+        KUBECONFIG_JSON: ((kubeconfig))
+        AUTH_KEY: ((auth-key))
+        PROXY_NAME: ((proxy-name))
+        IMAGE: ((registry.fqdn))/((image.repository))
+      run:
+        path: bash
+        args:
+        - "-e"
+        - "-c"
+        - |
+          echo "${KUBECONFIG_JSON}" > $(pwd)/.kubeconfig
+          export KUBECONFIG=$(pwd)/.kubeconfig
+
+          envoy_ip=$(kubectl get svc -n tanzu-system-ingress envoy -o=jsonpath='{.spec.clusterIP}')
+          
+          kubectl create namespace tailscale -o yaml --dry-run=client | kubectl apply -f -
+
+          ytt --ignore-unknown-comments \
+              --data-value envoy_ip=${envoy_ip} \
+              --data-value auth_key=${AUTH_KEY} \
+              --data-value proxy_name=${PROXY_NAME} \
+              --data-value image=${IMAGE} \
+              --file proxy-config/config/k8s \
+            > tailscale-deploy.yml
+
+          kapp deploy --namespace tanzu-kapp --into-ns tailscale --app tailscale --file tailscale-deploy.yml --yes
