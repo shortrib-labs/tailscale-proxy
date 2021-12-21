@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-REGISTRY=$(yq e .harbor.fqdn ${PARAMS_YAML})
+REGISTRY=$(yq e .registry.fqdn ${PARAMS_YAML})
 curl --user "admin:${HARBOR_PASSWORD}" -X POST https://${REGISTRY}/api/v2.0/projects -H "Content-type: application/json" --data @${PROJECT_DIR}/harbor/project/network.json
 GITHUB_REGISTRY=$(jq -n --arg githubUser $(yq e .github.user $PARAMS_YAML) --arg githubToken $(yq e .github.token $PARAMS_YAML) "$(cat ${PROJECT_DIR}/harbor/registry/github.json)")
 curl --user "admin:${HARBOR_PASSWORD}" -X POST https://${REGISTRY}/api/v2.0/registries -H "Content-type: application/json" --data "${GITHUB_REGISTRY}"
