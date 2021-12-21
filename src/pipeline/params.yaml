@@ -1,4 +1,6 @@
 ---
+proxy-name: shared-services
+
 config: 
   repository: https://github.com/shortrib-net/tailscale-proxy.git
   branch: feature-deploy-proxy
