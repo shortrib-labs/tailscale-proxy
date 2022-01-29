@@ -1,0 +1,12 @@
+#@ load("@ytt:data", "data")
+---
+proxy-name: #@ data.values["proxy-name"] 
+
+source: #@ data.values.source
+
+tailscale:
+  repository: #@ data.values.tailscale.repository
+  branch: #@ data.values.tailscale.branch
+
+image: #@ data.values.image
+
