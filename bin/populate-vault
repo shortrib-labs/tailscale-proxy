@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -e
 
-put-secret --team network \
-  --var registry fqdn="$(yq e .registry.fqdn ${PARAMS_YAML})" \
-                 robot="$(yq e .registry.robot ${PARAMS_YAML})" \
+put-secret --team $(yq e .concourse.team ${PARAMS_YAML}) \
+  --var registry fqdn="$(yq e .registry.fqdn ${PARAMS_YAML})"  \
+                 robot="$(yq e .registry.robot ${PARAMS_YAML})"  \
                  token="$(yq e .registry.token ${PARAMS_YAML})"
 
-put-secret --team network \
-  --var kubeconfig value="$(cat ${SECRETS_DIR}/kubeconfig)"
+put-secret --team $(yq e .concourse.team ${PARAMS_YAML}) \
+  --var github user="$(yq e .registry.user ${PARAMS_YAML})"  \
+               token="$(yq e .registry.token ${PARAMS_YAML})" 
 
-put-secret --team network --pipeline "$(basename ${PROJECT_DIR})" \
-  --var auth-key value="$(yq e .tailscale.auth-key ${PARAMS_YAML})" 
-
+put-secret --team $(yq e .concourse.team ${PARAMS_YAML}) \
+  --var auth-key "$(yq e .tailscale.auth-key ${PARAMS_YAML})"

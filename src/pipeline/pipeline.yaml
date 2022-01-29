@@ -16,8 +16,8 @@ resources:
   type: git
   icon: github
   source:
-    uri: ((config.repository))
-    branch: ((config.branch))
+    uri: ((source.repository))
+    branch: ((source.branch))
     paths: 
     - "config/k8s/*"
 
@@ -83,6 +83,7 @@ jobs:
       - name: image
       params:
         KUBECONFIG_JSON: ((kubeconfig))
+        CONTEXT: network@((proxy-name))
         AUTH_KEY: ((auth-key))
         PROXY_NAME: ((proxy-name))
         IMAGE: ((registry.fqdn))/((image.repository))
@@ -95,7 +96,8 @@ jobs:
           echo "${KUBECONFIG_JSON}" > $(pwd)/.kubeconfig
           export KUBECONFIG=$(pwd)/.kubeconfig
 
-          envoy_ip=$(kubectl get svc -n tanzu-system-ingress envoy -o=jsonpath='{.spec.clusterIP}')
+          kubectl config use-context ${CONTEXT}
+          envoy_ip=$(kubectl get svc -n projectcontour envoy -o=jsonpath='{.spec.clusterIP}')
           
           kubectl create namespace tailscale -o yaml --dry-run=client | kubectl apply -f -
 

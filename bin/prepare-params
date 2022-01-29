@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+if [ ! $# -gt 0 ]; then
+  echo "Must supply cluster name"
+  exit 1
+fi
+
+CLUSTER_NAME=${1}
+BRANCH=${2:-main}
+
+ytt --ignore-unknown-comments -f ${SOURCE_DIR}/pipeline/params-template.yaml -f ${PARAMS_YAML} \
+    --data-value proxy-name=${CLUSTER_NAME} \
+    --data-value source.branch="${BRANCH}" \
+    --data-value source.repository=$(git remote get-url origin | sed -Ene's#git@(github.com):([^/]*)#https://\1/\2#p') \
+  > ${WORK_DIR}/params-${CLUSTER_NAME}.yaml

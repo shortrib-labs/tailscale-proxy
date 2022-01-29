@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+if [ ! $# -eq 1 ]; then
+  echo "Must supply cluster name as arg"
+  exit 1
+fi
+CLUSTER_NAME=${1}
+
+TEAM=$(yq e .concourse.team ${PARAMS_YAML})
+PIPELINE=$(basename ${PROJECT_DIR})-${CLUSTER_NAME}
+
+fly --target ${TEAM} set-pipeline --pipeline ${PIPELINE} --config ${SOURCE_DIR}/pipeline/pipeline.yaml --load-vars-from ${WORK_DIR}/params-${CLUSTER_NAME}.yaml
+fly --target platform-team unpause-pipeline --pipeline ${PIPELINE}
